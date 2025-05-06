@@ -17,14 +17,15 @@ async function checkTitle(id) {
     return "";
   }
 
-  if (response.headers["X-Robots-Tag"] === "index") {
+  let url = response.headers["X-Originating-Url"];
+  if (!url) {
+    return "";
+  }
+  const loc = url.split("/")[3];
+  if (loc === "title") {
     return "us";
   }
-  if (response.headers["Location"]) {
-    const loc = response.headers["Location"].split("/")[3];
-    return loc.split("-")[0];
-  }
-  return "";
+  return loc.split("-")[0];
 }
 
 async function main() {
