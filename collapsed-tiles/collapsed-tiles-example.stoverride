@@ -4,22 +4,22 @@ tiles:
   - name: ChatGPT-Web-Check
     title: ChatGPT Web
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/chatgpt.png
-    collapse: true
+    collapsed: true
     url: https://chatgpt.com
   - name: ChatGPT-App-Check
     title: ChatGPT App
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/chatgpt.png
-    collapse: true
+    collapsed: true
     url: https://chatgpt.com
   - name: YouTube-Check
     title: YouTube
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/youtube.png
-    collapse: true
+    collapsed: true
     url: https://www.youtube.com
   - name: Netflix-Check
     title: Netflix
     icon: https://fastly.jsdelivr.net/gh/StashNetworks/misc@main/collapsed-tiles/img/netflix.png
-    collapse: true
+    collapsed: true
     url: https://www.netflix.com
 
 script-providers:
