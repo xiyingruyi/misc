@@ -1,0 +1,77 @@
+name: Sync Upstream and Replace URLs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天午夜运行一次 (UTC 时间)
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史记录
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Protect custom files
+        run: |
+          # 保护工作流 YAML
+          git update-index --skip-worktree .github/workflows/sync-upstream.yml
+          # 保护 replace_urls.py
+          git update-index --skip-worktree replace_urls.py
+          # 保护 Gemini 图片
+          git update-index --skip-worktree collapsed-tiles/img/gemini-color.png
+          echo "✅ 自定义文件已保护"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/StashNetworks/misc.git || true
+
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Check for upstream changes
+        id: upstream_changes
+        run: |
+          if [ $(git rev-list --count HEAD..upstream/main) -gt 0 ]; then
+            echo "has_upstream_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_upstream_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Merge upstream if changes
+        if: steps.upstream_changes.outputs.has_upstream_changes == 'true'
+        run: |
+          git merge upstream/main --allow-unrelated-histories
+          git push origin main
+
+      - name: Run URL replacement script
+        run: |
+          python3 replace_urls.py
+
+          # 检查 git 变更并 commit/push (容错 new/missing file)
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add collapsed-tiles/collapsed-tiles-example.stoverride || true
+          git commit -m "Custom: Update collapsed-tiles-example.stoverride with Gemini and CDN" || true
+          git push origin main || true
+          echo "ST file changes committed."
+
+      - name: Run JS replacement if needed
+        run: |
+          git add collapsed-tiles/script/Gemini.js || true
+          git commit -m "Custom: Update Gemini.js to Gemini detection" || true
+          git push origin main || true
+          echo "JS changes committed."
+
+      - name: Create Pull Request if upstream changes
+        if: steps.upstream_changes.outputs.has_upstream_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Sync upstream changes"
+          title: "Sync from upstream"
+          body: "Automated sync from StashNetworks/misc:main. Custom files protected."
+          branch: "sync-upstream"
+          base: main
