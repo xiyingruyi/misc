@@ -2,7 +2,7 @@ name: Sync Upstream and Replace URLs
 
 on:
   schedule:
-    - cron: '0 0 */3 * *'  # 每三天午夜运行一次 (UTC 时间)
+    - cron: '0 0 */4 * *'  # 每四天午夜运行一次 (UTC 时间)
   workflow_dispatch:  # 允许手动触发
 
 jobs:
